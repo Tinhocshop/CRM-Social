@@ -1,0 +1,8 @@
+{
+  "name": "ZaloCRM Customizer",
+  "description": "A professional CRM interface for Zalo, fully customizable while preserving your original source code and functional integrity.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

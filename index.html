@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function() {
+        // 1. Bulletproof JSON.stringify against circular structures
+        var origStringify = JSON.stringify;
+        JSON.stringify = function(val, replacer, space) {
+          var seen = new WeakSet();
+          return origStringify(val, function(k, v) {
+            if (typeof v === 'object' && v !== null) {
+              if (seen.has(v)) return '[Circular]';
+              seen.add(v);
+            }
+            if (typeof replacer === 'function') return replacer(k, v);
+            return v;
+          }, space);
+        };
+
+        // 2. Intercept console.error: sanitize Vue component instances
+        var origError = console.error;
+        console.error = function() {
+          var args = [];
+          for (var i = 0; i < arguments.length; i++) {
+            var item = arguments[i];
+            if (item && typeof item === 'object') {
+              if (item.$ || item._ || item.effect || item.subTree || item._vnode) {
+                args.push('[VueComponentInstance]');
+                continue;
+              }
+              if (item instanceof Error) {
+                args.push(item.stack || item.message);
+                continue;
+              }
+            }
+            args.push(item);
+          }
+          try {
+            origError.apply(console, args);
+          } catch(e) {
+            origError.call(console, String(arguments[0]));
+          }
+        };
+      })();
+    </script>
+    <link rel="icon" type="image/x-icon" href="/brand/zalocrm.ico" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/brand/zalocrm-logo.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/brand/zalocrm-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- App là light-only (theme hsLight). Khai báo để Chrome Android "Auto dark theme"
+         KHÔNG tự ép tối → tránh ô input bị trắng + chữ nhập vô hình trên mobile. -->
+    <meta name="color-scheme" content="light only" />
+    <meta name="theme-color" content="#0A192F" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <title>ZaloCRM Customizer</title>
+    <meta name="description" content="A professional CRM interface for Zalo, fully customizable while preserving your original source code and functional integrity." />
+    <meta property="og:title" content="ZaloCRM Customizer" />
+    <meta property="og:description" content="A professional CRM interface for Zalo, fully customizable while preserving your original source code and functional integrity." />
+    <style>
+      .dh-attr,
+      .contact-marquee,
+      .at-attr,
+      a[href*="locnguyendata.com"],
+      div:has(> a[href*="locnguyendata.com"]) {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
